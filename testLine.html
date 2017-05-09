@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Parent selector</title>
+    </head>
+<body>
+<canvas height="300px" width="500px" id="canva"></canvas>
+<script>
+    var canva = document.getElementById('canva'),
+        ctx = canva.getContext('2d');
+
+    var Point = function (x, y) {
+        this.startX = x;
+        this.startY = y;
+    };
+    var points = [new Point(1, 2), 
+                  new Point(10, 20), 
+                  new Point(30, 30), 
+                  new Point(40, 80), 
+                  new Point(100, 100), 
+                  new Point(120, 100)];
+
+    //goto first point
+    ctx.strokeStyle = "black";
+    ctx.moveTo(points[0].startX, points[0].startY);
+
+    var counter = 1;
+    /*inter = setInterval(function() {
+        //create interval, it will
+        //iterate over pointes and when counter > length
+        //will destroy itself
+        var point = points[counter++];
+        ctx.lineTo(point.startX, point.startY); 
+        ctx.stroke();
+        if (counter >= points.length) {
+           clearInterval(inter);
+        }
+        console.log(counter);
+    }, 500);*/
+	function drawFrame() {
+		interVal = window.requestAnimationFrame(drawFrame, canva);
+		var point = points[counter++];
+        ctx.lineTo(point.startX, point.startY); 
+        ctx.stroke();
+        if (counter >= points.length) {
+           clearInterval(inter);
+           console.log(counter);
+        }
+        else {
+			window.cancelAnimationFrame(interVal);
+		}
+		
+	}
+
+//	ctx.moveTo(x, y);
+//  ctx.stroke();
+    drawFrame()
+</script>
+    </body>
+</html>
