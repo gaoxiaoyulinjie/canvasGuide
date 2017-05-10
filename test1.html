@@ -158,6 +158,8 @@
 				}
 			}
 
+			
+			// sign是我定义的，将来会根据实际情况布置上去，应该有锚点ID，位置坐标
 			function drawSign(scale) {
 				var t = 1;
 				Signs.push({
@@ -180,7 +182,7 @@
 					y: 360
 				});
 
-				//					ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+				// ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
 				for(var i = 0; i < Signs.length; i++) {
 					var x = Signs[i].x * scale;
 					var y = Signs[i].y * scale;
@@ -192,6 +194,8 @@
 
 			}
 
+
+			// line只是模拟的假路径，实际上的流程是这样的————锚点（包含锚点ID）事先按照实际情况布置好（前端页面控制），然后卡（类似SIM卡，携带用户信息）去比较与最近的锚点的距离，如果离锚点A近，则激活锚点A（前端控制样式），接下来离锚点B近则激活锚点B。这样一来事先规定的路径如（6个锚点分别是A、B、C、D、E、F，规定A-B-C-D-E-F未正确的路径）便可以在页面上模拟实现路径图。其中的与锚点最近距离由后台实时上报
 			function drawLine(scale) {
 				var t = 1;
 				vertices.push({
@@ -209,10 +213,16 @@
 				}, {
 					x: 210,
 					y: 385
-				}, {
+				}
+				, {
+					x: 632,
+					y: 239
+				}
+				/*, {
 					x: 620,
 					y: 360
-				});
+				}*/
+				);
 				var points = calcWaypoints(vertices);
 				animate(points);
 

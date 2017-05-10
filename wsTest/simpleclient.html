@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+
+	<body>
+		<div id="connected"></div>
+
+		<script type="text/javascript">
+			var onOpen = function() {
+					/*console.log("Socket opened.");
+					socket.send("Hi, Server!");*/
+					var msg = {
+						type: "message",
+						text: "something",
+						id: "number",
+						date: Date.now()
+					};
+					// Send the msg object as a JSON-formatted string.
+					socket.send(JSON.stringify(msg));
+				},
+				onClose = function() {
+					console.log("Socket closed.");
+				},
+				onMessage = function(data) {
+					console.log("We get signal:");
+					console.log(data);
+				},
+				onError = function() {
+					console.log("We got an error.");
+				},
+
+				socket = new WebSocket("ws://127.0.0.1:8080/");
+			socket.onopen = onOpen;
+			socket.onclose = onClose;
+			socket.onerror = onError;
+			socket.onmessage = onMessage;
+		</script>
+	</body>
+
+</html>
