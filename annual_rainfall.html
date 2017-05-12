@@ -1,0 +1,104 @@
+<div id="echarts2" style="height: 400px;">
+
+</div>
+
+<script>
+    var myChart2 = echarts.init(document.getElementById('echarts2'), 'sakura');
+
+    var month = [];
+    var value = [];
+
+    var option2 = {
+        title: {
+            text: '某地区降雨量',
+            subtext: '纯属虚构',
+            x: 'center'
+        },
+        // 气泡提示框
+        tooltip: {
+            trigger: 'axis'
+        },
+        // 图例
+        legend: {
+            data: ['降水量'],
+            x: 'left'
+        },
+        grid: {
+            yAxis: 2
+        },
+        toolbox: {
+            show: true,
+            feature: {
+                mark: {show: true},
+                dataView: {show: true, readOnly: false},
+                magicType: {show: true, type: ['line', 'bar']},
+                restore: {show: true},
+                saveAsImage: {show: true}
+            }
+        },
+        dataZoom: {
+            show: true,
+            start: 0,
+            end: 100
+        },
+        calculable: true,
+        xAxis: [
+            {
+                type: 'category',
+                show: true,
+                data: month
+            }
+        ],
+        yAxis: [
+            {
+                type: 'value'
+            }
+        ],
+        series: [{
+            name: '降水量',
+            type: 'bar',
+            data: value,
+            markPoint: {
+                data: [
+                    {type: 'max', name: '最大值'},
+                    {type: 'min', name: '最小值'}
+                ]
+            },
+            symbol: "droplet",
+            markLine: {
+                data: [
+                    {type: 'average', name: '平均值'}
+                ]
+            }
+        }]
+    };
+
+    $.ajax({
+        type: 'get',
+        async: false,
+        url: "rainFall_data.json",
+        data: {},
+        dataType: "json",
+        success: function (result) {
+            console.log(result.data.length);
+            if (result) {
+                console.log(result.data.length);
+                console.log(result.data[2].value);
+                for (var i = 0; i < 12; i++) {
+                    console.log(result);
+                    month.push(result.data[i].month);
+                    value.push(result.data[i].value);
+                }
+                console.log(month);
+                console.log(value);
+            }
+        },
+        error: function (errorMsg) {
+            alert("亲爱的大爷，图标请求数据失败！");
+            myChart2.hideLoading();
+        }
+    })
+    myChart2.setOption(option2);
+    window.onresize = myChart2.resize;
+
+</script>

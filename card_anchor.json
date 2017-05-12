@@ -1,0 +1,28 @@
+{
+  "reader": [
+    {
+      "cardId": "1",
+      "anchorId": "1"
+    },
+    {
+      "cardId": "1",
+      "anchorId": "2"
+    },
+    {
+      "cardId": "1",
+      "anchorId": "3"
+    },
+    {
+      "cardId": "1",
+      "anchorId": "4"
+    },
+    {
+      "cardId": "1",
+      "anchorId": "5"
+    },
+    {
+      "cardId": "1",
+      "anchorId": "6"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>鼠标滚动测试</title>
+    <style>
+        #content {
+            width: 500px;
+            height: 500px;
+            background: #000;
+        }
+
+        p {
+            color: #c0a16b;
+        }
+
+        input {
+            color: #c1e2b3;
+        }
+    </style>
+</head>
+<body>
+<div id="content">
+    <p><label for="wheelDelta"> 滚动值:</label>(IE/Opera)<input type="text" id="wheelDelta"/></p>
+    <p><label for="detail"> 滚动值:(Firefox)</label><input type="text" id="detail"/></p>
+</div>
+</body>
+</html>
+<script src="jquery-1.9.1.js"></script>
+<script>
+    var oTxt = document.getElementById("text");
+    var scrollFunc = function (e) {
+        var direct = 0;
+        e = e || window.event;
+
+        var t1 = document.getElementById("wheelDelta");
+        var t2 = document.getElementById("detail");
+        if (e.wheelDelta > 0) {//IE/Opera/Chrome
+//            t1.value=e.wheelDelta;
+            t1.value = "chrome/IE/Opera浏览器鼠标向上滚动";
+            console.log(t1.value);
+        }
+        if (e.detail > 0) {//Firefox
+            t2.value = "Firefox浏览器鼠标向下滚动";
+            console.log(t2.value);
+        }
+        if (e.wheelDelta < 0) {
+            t1.value = "chrome/IE/Opera浏览器鼠标向下滚动"
+            console.log(t1.value);
+        }
+        if (e.detail < 0) {//Firefox
+            t2.value = "Firefox浏览器鼠标向上滚动";
+            console.log(t2.value);
+        }
+//        ScrollText(direct);
+    }
+    /*注册事件*/
+    if (document.addEventListener) {
+        document.addEventListener('DOMMouseScroll', scrollFunc, false);
+    }//W3C
+    window.onmousewheel = document.onmousewheel = scrollFunc;//IE/Opera/Chrome/Safari
+</script>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+<!--<script>
+    var timer;
+    var arr = [];
+    var i = 0;
+
+    function addArr() {
+        arr.push(Math.floor(Math.random() * 9 + 1));
+        i++;
+        if (i > 5) {
+            clearInterval(timer);
+        }
+        console.log(arr);
+    }
+    timer = setInterval(addArr, 1000);
+</script>-->
+<script>
+    var arr = [];
+    clearInterval(timer)
+    var timer = setInterval(function(){
+        var arrL = arr.length;
+        if(arrL < 10){
+            var randomNum = Math.floor(Math.random()*256);
+            arr.push(randomNum);
+            console.log(arr)
+        }else{
+            clearInterval(timer);
+        }
+
+    },1000);
+    /*setTimeout(function(){
+        for(var i = 0; i < arr.length; i++){
+            console.log(arr[i])
+        }
+    }, 10000)*/
+
+
+
+</script>
+</html>

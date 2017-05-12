@@ -1,0 +1,52 @@
+{
+  "data": [
+    {
+      "month": "一月",
+      "value": 310
+    },
+    {
+      "month": "二月",
+      "value": 335
+    },
+    {
+      "month": "三月",
+      "value": 234
+    },
+    {
+      "month": "四月",
+      "value": 435
+    },
+    {
+      "month": "五月",
+      "value": 548
+    },
+    {
+      "month": "六月",
+      "value": 610
+    },
+    {
+      "month": "七月",
+      "value": 835
+    },
+    {
+      "month": "八月",
+      "value": 734
+    },
+    {
+      "month": "九月",
+      "value": 855
+    },
+    {
+      "month": "十月",
+      "value": 348
+    },
+    {
+      "month": "十一月",
+      "value": 135
+    },
+    {
+      "month": "十二月",
+      "value": 158
+    }
+  ]
+}

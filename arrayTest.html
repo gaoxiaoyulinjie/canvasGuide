@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>js数组动态添加元素</title>
+</head>
+<body>
+
+</body>
+<script src="jquery-1.9.1.js"></script>
+<script>
+    $.ajax({
+        type: 'get',
+        async: false,
+        url: "anchorPlace.json",
+        data: {},
+        dataType: 'json',
+        success: function (res) {
+            var timer;
+            var arr = [];
+            var i = 0;
+
+            function addArr() {
+                arr.push({x:res.anchor[i].x ,y:res.anchor[i].y});
+                i++;
+                if (arr.length >= 6) {
+                    clearInterval(timer);
+                }
+                console.log(arr);
+            }
+            timer = setInterval(addArr, 1000);
+        }
+    })
+</script>
+</html>
