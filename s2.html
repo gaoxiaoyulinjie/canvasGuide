@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        .active { background: #424b50; color: #f3f8f1; }
+    </style>
+</head>
+<body>
+page B.
+<ul>
+    <li> information 01 </li>
+    <li> information 02 </li>
+    <li> information 03 </li>
+    <li> information 04 </li>
+    <li> information 05 </li>
+</ul>
+<script>
+    var liElem = document.querySelectorAll('ul > li');
+
+    window.addEventListener('storage', function() {
+        liElem[localStorage.getItem('iPre')].classList.remove('active');
+        liElem[localStorage.getItem('iNow')].classList.add('active');
+    }, false);
+</script>
+</body>
+</html>

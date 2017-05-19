@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/slider.css">
+    <style>
+        #canvas1 {
+            border: 1px solid #c1c1c1;
+            position: absolute;
+            left: 10%;
+            top: 10%;
+            /*box-shadow: 10px 10px 5px #888888;*/
+            background: rgba(10, 10, 10, 0.5);
+            z-index: 1;
+        }
+
+        /*#canvas1:hover {
+            cursor: move;
+        }*/
+
+        #content {
+            width: 1000px;
+            height: 600px;
+            position: relative;
+            border: 1px solid red;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+        }
+
+        /*#scale-range {
+            position: absolute;
+            bottom: 0;
+            left: 10%;
+        }*/
+
+        #enlarge, #shrink {
+            width: 50px;
+            z-index: 2;
+            position: absolute;
+        }
+
+        #shrink {
+            top: 60px;
+        }
+
+        button {
+            border: none;
+            background: #515151;
+            position: absolute;
+            border-radius: 3px;
+            /*width: 70px;*/
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 30px;
+            text-align: center;
+            top: 10px;
+            /*left: 50%;
+            transform: translate(-50%, 0);*/
+        }
+
+        #btnStart {
+            left: 10%;
+        }
+        #addSign {
+            left: 40%;
+        }
+
+        #printScreen {
+            left: 20%;
+        }
+
+        button:hover {
+            background: #c1c1c1;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+<div id="readout">这里是鼠标坐标位置:</div>
+<div id="content">
+    <img src="svg/enlarge.svg" id="enlarge">
+    <img src="svg/shrink.svg" id="shrink">
+    <canvas id="canvas1"></canvas>
+    <button id="btnStart">开始</button>
+    <button id="printScreen">截图</button>
+    <button id="addSign">添加锚点</button>
+    <!--<input type="range" id="scale-range" min="0.5" max="3.0" step="0.01" value="1.0" style="margin:20px auto;width:800px"/>-->
+</div>
+
+</body>
+<script src="jquery-1.9.1.js"></script>
+<script>
+    //    var scaleFlag = false;
+    var moveFlag = false;
+    //    var moveLineFlag = false;
+    var canvas1 = document.getElementById('canvas1');
+    var readout = document.getElementById('readout');
+    var box = document.getElementById('content');
+    var ctx1 = canvas1.getContext('2d');
+    //    var Signs = [];
+    // 放大镜
+    var enlarge = document.getElementById('enlarge');
+    var shrink = document.getElementById('shrink');
+    var eI = 1;
+
+    // 开始
+    var start = document.getElementById('btnStart');
+
+    // 截图
+    var printScreen = document.getElementById('printScreen')
+
+    // 滑竿的值
+    var rangeValue = document.getElementById('scale-range');
+    var boxWidth = box.offsetWidth;
+    var boxHeight = box.offsetHeight;
+
+    // 锚点的序号
+    var dian = 0;
+    // 锚点的坐标数组
+    var Signs = [];
+    var oImg = new Image();
+    oImg.src = "svg/map.svg";
+    var sign = new Image();
+    sign.src = "svg/greenSign.svg";
+
+    function clear() {
+        // clear canvas function;
+        ctx1.clearRect(0, 0, ctx1.canvas.width, ctx1.canvas.height);
+    }
+
+    oImg.onload = function () {
+//        coord(1);
+
+
+
+        // 截图
+        //图片下载操作,指定图片类型
+        /*printScreen.onclick = function download(type) {
+            //设置保存图片的类型
+            var imgdata = canvas1.toDataURL(type);
+            //将mime-type改为image/octet-stream,强制让浏览器下载
+            var fixtype = function (type) {
+                type = type.toLocaleLowerCase().replace(/jpg/i, 'jpeg');
+                var r = type.match(/png|jpeg|bmp|gif/)[0];
+                return 'image/' + r;
+            }
+            imgdata = imgdata.replace(fixtype(type), 'image/octet-stream')
+            //将图片保存到本地
+            var saveFile = function (data, filename) {
+                var link = document.createElement('a');
+                link.href = data;
+                link.download = filename;
+                var event = document.createEvent('MouseEvents');
+                event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                link.dispatchEvent(event);
+            }
+            var filename = new Date().toLocaleDateString() + '.' + type;
+            saveFile(imgdata, filename);
+        }*/
+        drawImageByScale();
+//        drawSign();
+
+        // --------------- 拖拉 start ------------------------
+        canvas1.onmousedown = function (e) {
+            canvas1.style.cursor = 'move';
+            var clickEvent = window.event || e;
+            var mwidth = clickEvent.clientX - canvas1.offsetLeft;
+            var mheight = clickEvent.clientY - canvas1.offsetTop;
+            moveFlag = true;
+            document.onmousemove = function (e) {
+                var moveEvent = window.event || e;
+                if (moveFlag) {
+                    canvas1.style.left = moveEvent.clientX - mwidth + 'px';
+                    canvas1.style.top = moveEvent.clientY - mheight + 'px'
+                    if (moveEvent.clientX <= mwidth) {
+                        canvas1.style.left = 0 + 'px';
+                    }
+                    if (parseInt(canvas1.style.left) + canvas1.offsetWidth >= boxWidth) {
+                        canvas1.style.left = boxWidth - canvas1.offsetWidth + 'px';
+                    }
+                    if (moveEvent.clientY <= mheight) {
+                        canvas1.style.top = 0 + 'px';
+                    }
+                    if (parseInt(canvas1.style.top) + canvas1.offsetHeight >= boxHeight) {
+                        canvas1.style.top = boxHeight - canvas1.offsetHeight + 'px';
+                    }
+                }
+                canvas1.onmouseup = function (e) {
+                    moveFlag = false;
+                    canvas1.style.cursor = 'default';
+                }
+            }
+        }
+        // --------------- 拖拉 end ------------------------
+        function drawImageByScale(scale) {
+
+            if (scale == undefined) {
+                scale = 1;
+            }
+            //				ctx1.save();
+//            console.log(scale)
+            canvas1.width = 800 * scale;
+            canvas1.height = 500 * scale;
+            var width = oImg.width * scale;
+            var height = oImg.height * scale;
+            ctx1.save();
+            x = canvas1.width / 2 - width / 2;
+            y = canvas1.height / 2 - height / 2;
+            ctx1.drawImage(oImg, x, y, width, height);
+            ctx1.restore();
+        }
+
+
+        start.onclick = function () {
+            scale = eI;
+            drawImageByScale(scale);
+            drawLine(scale);
+            coord(scale);
+        }
+        enlarge.onclick = function () {
+//            console.log( ++eI);
+            eI += 0.1;
+            scale = eI;
+            drawImageByScale(scale);
+            drawLine(scale);
+        }
+        shrink.onclick = function () {
+            if (eI >= 1) {
+                eI -= 0.1;
+                scale = eI;
+                drawImageByScale(scale);
+                drawLine(scale);
+            }
+        }
+        // 缩放改变大小
+        /*rangeValue.onmousedown = function () {
+         scaleFlag = true;
+         //				moveLineFlag = true;
+         document.onmousemove = function () {
+         scale = rangeValue.value;
+         if (scaleFlag) {
+         //						ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+         drawImageByScale(scale);
+         drawSign(scale);
+         }
+         rangeValue.onmouseup = function () {
+         drawLine(scale);
+         scaleFlag = false;
+         //						moveLineFlag = false;
+         }
+         }
+         }*/
+
+
+        // sign是我定义的，将来会根据实际情况布置上去，应该有锚点ID，位置坐标
+
+
+
+        // line只是模拟的假路径，实际上的流程是这样的————锚点（包含锚点ID）事先按照实际情况布置好（前端页面控制），然后卡（类似SIM卡，携带用户信息）去比较与最近的锚点的距离，如果离锚点A近，则激活锚点A（前端控制样式），接下来离锚点B近则激活锚点B。这样一来事先规定的路径如（6个锚点分别是A、B、C、D、E、F，规定A-B-C-D-E-F未正确的路径）便可以在页面上模拟实现路径图。其中的与锚点最近距离由后台实时上报
+        function drawLine(scale) {
+            var t = 1;
+            $.ajax({
+                type: 'get',
+                url: 'path.json',
+                dataType: 'json',
+                success: function (res) {
+                    var i = 0;
+
+                    var vertices = [];
+
+                    function addArr() {
+                        vertices.push({x: res.card_01[i].x + 10, y: res.card_01[i].y + 10});
+                        i++;
+                        if (vertices.length >= 6) {
+                            clearInterval(timer);
+                        }
+//                        console.log(vertices);
+//                        return vertices;
+                        var points = calcWaypoints(vertices);
+                        animate(points);
+
+//                        console.log(points);
+
+                        function calcWaypoints(vertices) {
+                            var waypoints = [];
+                            for (var i = 1; i < vertices.length; i++) {
+                                var pt0 = vertices[i - 1];
+                                var pt1 = vertices[i];
+                                var dx = pt1.x - pt0.x;
+                                var dy = pt1.y - pt0.y;
+                                for (var j = 0; j <= 1; j++) {
+                                    var x = (pt0.x + dx * j / 1) * scale;
+                                    var y = (pt0.y + dy * j / 1) * scale;
+                                    waypoints.push({
+                                        x: x,
+                                        y: y
+                                    });
+                                }
+                            }
+                            return (waypoints);
+                        }
+
+
+                        requestAnimationFrame(animate);
+
+                        function animate() {
+                            //					if(t < 1000 && moveLineFlag) {
+                            /*if (!moveLineFlag) {
+                             ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+                             }*/
+                            // console.log(points[0])
+                            // ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+                            ctx1.save();
+                            ctx1.beginPath();
+                            // ctx1.moveTo(points[t - 1].x + 0.5, points[t - 1].y + 0.5);
+                            ctx1.strokeStyle = 'lightblue';
+                            ctx1.lineTo(points[t - 1].x, points[t - 1].y);
+                            ctx1.lineTo(points[t].x, points[t].y);
+                            if (points[t].x == undefined || points[t].y == undefined) {
+                                return;
+                            }
+                            ctx1.stroke();
+                            ctx1.restore();
+                            t++;
+                        }
+                    }
+
+                    timer = setInterval(addArr, 1000);
+//                    console.log(vertices);
+
+
+                    /*function animate() {
+                     //					if(t < 1000 && moveLineFlag) {
+                     if (t < 200) {
+                     requestAnimationFrame(animate);
+                     }
+                     /!*if (!moveLineFlag) {
+                     ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+                     }*!/
+                     // console.log(points[0])
+                     // ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+                     ctx1.beginPath();
+                     // ctx1.moveTo(points[t - 1].x + 0.5, points[t - 1].y + 0.5);
+                     ctx1.lineTo(points[t - 1].x, points[t - 1].y);
+                     ctx1.lineTo(points[t].x, points[t].y);
+                     ctx1.stroke();
+                     t++;
+                     }*/
+                }
+            })
+            /*function pathByTime(res) {
+             var vertices = [];
+             var i = 0;
+             function addArr() {
+             vertices.push({x: res.card_01[i].x, y: res.card_01[i].y});
+             i ++;
+             if (vertices.length >= 6) {
+             clearInterval(timer);
+             }
+             console.log(vertices);
+             }
+             timer = setInterval(addArr, 1000);
+             }*/
+            /*vertices.push(
+             {
+             x: 632,
+             y: 239
+             }, {
+             x: 455,
+             y: 221
+             },
+             {
+             x: 280,
+             y: 181
+             }, {
+             x: 148,
+             y: 282
+             }, {
+             x: 210,
+             y: 385
+             }
+             , {
+             x: 632,
+             y: 239
+             }
+             , {
+             x: 620,
+             y: 360
+             }
+             );*/
+            /*var points = calcWaypoints(vertices);
+             animate(points);
+
+             console.log(points.length);*/
+
+            /*function calcWaypoints(vertices) {
+             var waypoints = [];
+             for (var i = 1; i < vertices.length; i++) {
+             var pt0 = vertices[i - 1];
+             var pt1 = vertices[i];
+             var dx = pt1.x - pt0.x;
+             var dy = pt1.y - pt0.y;
+             for (var j = 0; j < 200; j++) {
+             var x = (pt0.x + dx * j / 200) * scale;
+             var y = (pt0.y + dy * j / 200) * scale;
+             waypoints.push({
+             x: x,
+             y: y
+             });
+             }
+             }
+             return (waypoints);
+             }*/
+
+
+            /*function animate() {
+             //					if(t < 1000 && moveLineFlag) {
+             if (t < 1000) {
+             requestAnimationFrame(animate);
+             }
+             /!*if (!moveLineFlag) {
+             ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+             }*!/
+             // console.log(points[0])
+             // ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+             ctx1.beginPath();
+             // ctx1.moveTo(points[t - 1].x + 0.5, points[t - 1].y + 0.5);
+             ctx1.lineTo(points[t - 1].x, points[t - 1].y);
+             ctx1.lineTo(points[t].x, points[t].y);
+             ctx1.stroke();
+             t++;
+             }*/
+        }
+
+        // 获取鼠标坐标&&鼠标双击画上锚点
+        function coord(scale) {
+            function windowToCanvas(canvas, x, y) {
+                var bBox = canvas1.getBoundingClientRect();
+
+                return {
+                    x: (x - bBox.left * (canvas1.width / bBox.width)) * scale,
+                    y: (y - bBox.top * (canvas1.height / bBox.height)) * scale
+                };
+
+            }
+
+            if (ctx1.isPointInPath(20,50))
+            {
+                ctx1.stroke();
+            };
+            function updateReadout(x, y) {
+
+                // 鼠标双击添加锚点
+                canvas1.ondblclick = function (index) {
+                    Signs.push({x:x, y:y});
+                    ctx1.drawImage(sign, x * scale , y * scale );
+                    console.log(Signs.length);
+                    console.log(Signs[dian].x * scale)
+                    ctx1.beginPath();
+                    ctx1.strokeStyle = 'green'
+                    ctx1.moveTo(Signs[dian].x * scale, Signs[dian].y * scale);
+                    ctx1.lineTo(Signs[dian + 1].x * scale, Signs[dian + 1].y * scale);
+                    ctx1.stroke();
+                    ctx1.closePath();
+                    dian ++;
+                    /*function drawSign(scale) {
+                        var t = 1;
+                        $.ajax({
+                            type: 'get',
+                            url: 'anchorPlace.json',
+                            data: {},
+                            dataType: 'json',
+                            success: function (res) {
+                                var Signs = [];
+                                for (var i = 0; i < 6; i++) {
+                                    Signs.push({x: res.anchor[i].x, y: res.anchor[i].y});
+                                    var x = Signs[i].x * scale;
+                                    var y = Signs[i].y * scale;
+                                    ctx1.save();
+                                    ctx1.drawImage(sign, x - 10 * scale, y - 22 * scale, 20 * scale, 20 * 4 / 3 * scale);
+                                    /!*ctx1.moveTo()
+                                     ctx1.lineTo(x, y);*!/
+                                    ctx1.restore();
+                                }
+                                ctx1.beginPath();
+                                ctx1.strokeStyle = 'green'
+                                ctx1.moveTo(Signs[0].x * scale, Signs[0].y * scale);
+                                ctx1.lineTo(Signs[1].x * scale, Signs[1].y * scale);
+                                ctx1.lineTo(Signs[2].x * scale, Signs[2].y * scale);
+                                ctx1.lineTo(Signs[3].x * scale, Signs[3].y * scale);
+                                ctx1.lineTo(Signs[4].x * scale, Signs[4].y * scale);
+                                ctx1.lineTo(Signs[5].x * scale, Signs[5].y * scale);
+                                ctx1.stroke();
+                                ctx1.closePath();
+                            }
+                        });
+                        /!*Signs.push({
+                         x: 632,
+                         y: 239
+                         }, {
+                         x: 455,
+                         y: 221
+                         }, {
+                         x: 280,
+                         y: 181
+                         }, {
+                         x: 148,
+                         y: 282
+                         }, {
+                         x: 210,
+                         y: 385
+                         }, {
+                         x: 620,
+                         y: 360
+                         });*!/
+
+                        // ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+
+                        /!*for (var i = 0; i < Signs.length; i++) {
+                         var x = Signs[i].x * scale;
+                         var y = Signs[i].y * scale;
+                         console.log("hahh" + x);
+                         ctx1.save();
+                         ctx1.drawImage(sign, x - 10 * scale, y - 22 * scale, 20 * scale, 20 * 4 / 3 * scale);
+                         ctx1.restore();
+                         }*!/
+
+                    }*/
+                    /*return function () {
+                        localStorage.setItem('iPre', (localStorage.getItem('iNow') || 0));
+                        localStorage.setItem('iNow', index);
+                    }*/
+                }
+                /*sign.onmouseenter = function () {
+//                    e.style.cursor = pointer;
+                    console.log("鼠标上移")
+                }*/
+//                console.log("我是" + sign);
+                readout.innerText = "这里是鼠标坐标位置:" + "\n" + "(" + x.toFixed(0) + "," + y.toFixed(0) + ")";
+            }
+            canvas1.onmousemove = function (e) {
+                var loc = windowToCanvas(canvas1, e.clientX, e.clientY);
+                updateReadout(loc.x, loc.y);
+            };
+            /*canvas1.onmousewheel = function (e) {
+                console.log(e);
+            }*/
+
+
+        }
+
+        /*canvas1.onclick = function (e) {
+         canvas1.onmousemove = function () {
+         console.log('将被拖拉');
+         }
+         }*/
+
+    }
+</script>
+
+</html>

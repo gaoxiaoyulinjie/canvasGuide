@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>添加&移动锚点</title>
+
+    <style>
+        canvas {
+            cursor: pointer;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="800" height="500">
+</canvas>
+
+<div>
+    <button onclick="addRandomSign()">添加锚点</button>
+    <button onclick="clearCanvas()">清空画布</button>
+</div>
+
+</body>
+</html>
+<script>
+    // 保存画布上所有的圆圈
+    var signs = [];
+
+    var canvas;
+    var context;
+    var i = 0;
+    var imgs = new Image();
+    imgs.src = "svg/greenSign.svg";
+
+
+    window.onload = function () {
+        canvas = document.getElementById("canvas");
+        context = canvas.getContext("2d");
+
+        var img = new Image();
+        img.src = "svg/greenSign.svg";
+
+
+        canvas.onmousedown = canvasClick;
+        canvas.onmouseup = stopDragging;
+        canvas.onmouseout = stopDragging;
+        canvas.onmousemove = dragSign;
+    };
+
+    function addRandomSign(x, y) {
+        // 为圆圈计算一个随机大小和位置
+        x = randomFromTo(0, canvas.width);
+        y = randomFromTo(0, canvas.height);
+        var w = 10;
+        var h = 15;
+         // 把它保存在数组中
+        // signs存放的是图片的位置
+        signs.push({x: x, y: y});
+        signs[i].isSelected = false;
+        i ++;
+        console.log(signs);
+        // 重新绘制画布
+        drawSigns();
+    }
+
+    function clearCanvas() {
+        // 去除所有圆圈
+        signs = [];
+        // 重新绘制画布.
+        drawSigns();
+    }
+
+    function drawSigns() {
+        // 清除画布，准备绘制
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        // 遍历所有圆圈
+        for (var i = 0; i < signs.length; i++) {
+//            var imgs = signs[i];
+            // 绘制圆圈
+            context.globalAlpha = 0.85;
+            var w = 15;
+            var h = 20;
+            context.drawImage(imgs, signs[i].x, signs[i].y, w, h);
+
+            if (signs[i].isSelected) {
+                console.log("第" + (i + 1) + "个图标被选中了")
+            }
+            else {
+                console.log('没有被选中')
+            }
+        }
+    }
+
+    // 先前选择的图片
+    var previousSelectedSign;
+
+    function canvasClick(e) {
+        // 取得画布上被单击的点
+        var clickX = e.pageX - canvas.offsetLeft;
+        var clickY = e.pageY - canvas.offsetTop;
+
+        console.log(clickX, clickY);
+
+        // 查找被单击的圆圈
+        for (var i = signs.length - 1; i >= 0; i--) {
+            var imgs = signs[i];
+            //使用勾股定理计算这个点与圆心之间的距离
+            var distanceFromCenter = Math.sqrt(Math.pow(signs[i].x - clickX, 2)
+                + Math.pow(signs[i].y - clickY, 2))
+            // 判断这个点是否在圆圈中
+            if (distanceFromCenter <= 20) {
+                // 清除之前选择的圆圈
+                if (previousSelectedSign != null) previousSelectedSign.isSelected = false;
+                previousSelectedSign = signs[i];
+
+                //选择新圆圈
+                signs[i].isSelected = true;
+
+                // 使圆圈允许拖拽
+                isDragging = true;
+
+                //更新显示
+                drawSigns();
+
+                //停止搜索
+                return;
+            }
+        }
+    }
+
+    //在某个范围内生成随机数
+    function randomFromTo(from, to) {
+        return Math.floor(Math.random() * (to - from + 1) + from);
+    }
+
+
+
+
+    var isDragging = false;
+
+    function stopDragging() {
+        isDragging = false;
+    }
+
+    function dragSign(e) {
+        // 判断圆圈是否开始拖拽
+        if (isDragging == true) {
+            // 判断拖拽对象是否存在
+            if (previousSelectedSign != null) {
+                // 取得鼠标位置
+                var x = e.pageX - canvas.offsetLeft;
+                var y = e.pageY - canvas.offsetTop;
+
+                // 将圆圈移动到鼠标位置
+                previousSelectedSign.x = x;
+                previousSelectedSign.y = y;
+                // 更新画布
+                drawSigns();
+            }
+        }
+    }
+</script>

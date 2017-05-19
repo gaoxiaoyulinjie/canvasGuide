@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        img {
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="c1" width="800" height="500" style="border: 1px solid red;">
+
+    </canvas>
+</body>
+</html>
+<script>
+    /*var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    canvas.style.border = '2px solid red';*/
+    /*var img = new Image();
+    img.style.position = 'absolute'
+    img.src = "svg/greenSign.svg"
+    img.id = 'haha';
+    var oImg = document.getElementById('haha');
+    console.log(oImg);*/
+    /*img.onload = function () {
+
+        ctx.drawImage(img, 100, 200, 50, 150);
+        img.onmouseenter = function () {
+            console.log('hahh')
+        }
+
+        img.onmousemove = function (e) {
+            var clickEvent=window.event||e;
+            var mwidth=clickEvent.clientX-canvas.offsetLeft;
+            var mheight=clickEvent.clientY-canvas.offsetTop;
+            console.log(mwidth, mheight);
+        }
+
+    }*/
+    var cbool = false;
+    var currentx = 100;
+    var currenty = 100;
+    var container = document.getElementById('c1');
+    var context = container.getContext('2d');
+
+
+    drawing({x: currentx, y: currenty});
+    function drawimg(po) {
+        context.clearRect(0, 0, container.width, container.height);
+        context.fillStyle = 'steelblue';
+        context.strokeRect(po.x, po.y, 50, 50);
+        context.fillRect(po.x, po.y, 50, 50);
+
+        currentx = po.x;
+        currenty = po.y;
+    }
+
+    function getPositionOnCanvas(canvas, x, y) {
+        var box = canvas.getBoundingClientRect();
+        var obj = {
+            x: x - box.left,
+            y: y - box.top
+        };
+        return obj;
+    }
+</script>

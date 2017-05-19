@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+page A.
+<ul>
+    <li><a href="javascript:void(0);">item 01</a></li>
+    <li><a href="javascript:void(0);">item 02</a></li>
+    <li><a href="javascript:void(0);">item 03</a></li>
+    <li><a href="javascript:void(0);">item 04</a></li>
+    <li><a href="javascript:void(0);">item 05</a></li>
+</ul>
+<script>
+    var liElem = document.querySelectorAll('ul > li');
+
+    for (var i = 0; i < liElem.length; i++) {
+        liElem[i].onclick = function(index) {
+            return function() {
+                localStorage.setItem('iPre', (localStorage.getItem('iNow') || 0));
+                localStorage.setItem('iNow', index);
+            }
+        }(i);
+    }
+</script>
+</body>
+</html>

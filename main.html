@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/slider.css">
+    <style>
+        #canvas1 {
+            border: 1px solid #c1c1c1;
+            position: absolute;
+            left: 10%;
+            top: 10%;
+            /*box-shadow: 10px 10px 5px #888888;*/
+            background: rgba(10, 10, 10, 0.5);
+            z-index: 1;
+        }
+
+        #canvas2 {
+            border: 1px solid #c1c1c1;
+            position: absolute;
+            left: 10%;
+            top: 10%;
+            /*box-shadow: 10px 10px 5px #888888;*/
+            background: rgba(100, 10, 10, 0.5);
+            z-index: 2;
+        }
+
+        /*#canvas1:hover {
+            cursor: move;
+        }*/
+
+        #content {
+            width: 1000px;
+            height: 600px;
+            position: relative;
+            border: 1px solid red;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+        }
+
+        /*#scale-range {
+            position: absolute;
+            bottom: 0;
+            left: 10%;
+        }*/
+
+        #enlarge, #shrink {
+            width: 50px;
+            z-index: 2;
+            position: absolute;
+        }
+
+        #shrink {
+            top: 60px;
+        }
+
+        button {
+            border: none;
+            background: #515151;
+            position: absolute;
+            border-radius: 3px;
+            /*width: 70px;*/
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 30px;
+            text-align: center;
+            top: 10px;
+            /*left: 50%;
+            transform: translate(-50%, 0);*/
+        }
+
+        #btnStart {
+            left: 10%;
+        }
+
+        #showLines {
+            left: 20%;
+        }
+
+        #deleteSign {
+            left: 43%;
+        }
+
+        #realTimeLines {
+            left: 60%;
+        }
+
+        button:hover {
+            background: #c1c1c1;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+<div id="readout">这里是鼠标坐标位置:</div>
+<div id="content">
+    <img src="svg/enlarge.svg" id="enlarge">
+    <img src="svg/shrink.svg" id="shrink">
+    <canvas id="canvas1"></canvas>
+    <canvas id="canvas2"></canvas>
+    <button id="btnStart">开始</button>
+    <button id="showLines" onclick="showLines()">形成引导路线</button>
+    <button id="deleteSign" onclick="deleteSign()">删除锚点</button>
+    <button id="realTimeLines" onclick="realTimeLines()">查看实施路线</button>
+    <!--<input type="range" id="scale-range" min="0.5" max="3.0" step="0.01" value="1.0" style="margin:20px auto;width:800px"/>-->
+</div>
+
+</body>
+<script src="jquery-1.9.1.js"></script>
+<script>
+    //    var scaleFlag = false;
+    var moveFlag = false;
+    //    var moveLineFlag = false;
+    var canvas1 = document.getElementById('canvas1');
+    var canvas2 = document.getElementById('canvas2');
+    var readout = document.getElementById('readout');
+    var box = document.getElementById('content');
+    var ctx1 = canvas1.getContext('2d');
+    var ctx2 = canvas2.getContext('2d');
+    //    var index = 0;
+    //    var Signs = [];
+    // 放大镜
+    var enlarge = document.getElementById('enlarge');
+    var shrink = document.getElementById('shrink');
+    var eI = 1;
+
+
+    var isRealTime = false;
+    // 开始
+    var start = document.getElementById('btnStart');
+
+    // 截图
+    var printScreen = document.getElementById('printScreen')
+
+    var boxWidth = box.offsetWidth;
+    var boxHeight = box.offsetHeight;
+
+    // 锚点的序号
+    var dian = 0;
+    // 锚点的坐标数组
+    var Signs = [];
+    var oImg = new Image();
+    oImg.src = "svg/map.svg";
+    var sign = new Image();
+    sign.src = "svg/greenSign.svg";
+    sign.width = 15;
+    sign.height = 20;
+
+    function clear() {
+        // clear canvas function;
+        ctx1.clearRect(0, 0, ctx1.canvas.width, ctx1.canvas.height);
+    }
+
+    window.onload = function () {
+        drawImageByScale();
+        canvas2.onmousedown = canvasDrag;
+        canvas2.onclick = canvasClick;
+        start.onclick = Start;
+        enlarge.onclick = Enlarge;
+        shrink.onclick = Shrink;
+    }
+
+
+    //        drawSign();
+
+    // --------------- 拖拉 start ------------------------
+    function canvasDrag(e) {
+//        canvasClick(e);
+        canvas2.style.cursor = 'move';
+        var clickEvent = window.event || e;
+        var mwidth = clickEvent.clientX - canvas1.offsetLeft;
+        var mheight = clickEvent.clientY - canvas1.offsetTop;
+        moveFlag = true;
+        document.onmousemove = function (e) {
+            var moveEvent = window.event || e;
+            if (moveFlag) {
+                canvas1.style.left = moveEvent.clientX - mwidth + 'px';
+                canvas1.style.top = moveEvent.clientY - mheight + 'px'
+                canvas2.style.left = moveEvent.clientX - mwidth + 'px';
+                canvas2.style.top = moveEvent.clientY - mheight + 'px'
+                if (moveEvent.clientX <= mwidth) {
+                    canvas1.style.left = 0 + 'px';
+                    canvas2.style.left = 0 + 'px';
+                }
+                if (parseInt(canvas1.style.left) + canvas1.offsetWidth >= boxWidth) {
+                    canvas1.style.left = boxWidth - canvas1.offsetWidth + 'px';
+                    canvas2.style.left = boxWidth - canvas2.offsetWidth + 'px';
+                }
+                if (moveEvent.clientY <= mheight) {
+                    canvas1.style.top = 0 + 'px';
+                    canvas2.style.top = 0 + 'px';
+                }
+                if (parseInt(canvas1.style.top) + canvas1.offsetHeight >= boxHeight) {
+                    canvas1.style.top = boxHeight - canvas1.offsetHeight + 'px';
+                    canvas2.style.top = boxHeight - canvas1.offsetHeight + 'px';
+                }
+            }
+            canvas2.onmouseup = function (e) {
+                moveFlag = false;
+                canvas2.style.cursor = 'default';
+            }
+        }
+    }
+    // --------------- 拖拉 end ------------------------
+
+
+    function drawImageByScale(scale) {
+
+        if (scale == undefined) {
+            scale = 1;
+        }
+        //				ctx1.save();
+//            console.log(scale)
+        canvas1.width = 800 * scale;
+        canvas1.height = 500 * scale;
+        canvas2.width = 800 * scale;
+        canvas2.height = 500 * scale;
+        var width = oImg.width * scale;
+        var height = oImg.height * scale;
+        ctx1.save();
+        x = canvas1.width / 2 - width / 2;
+        y = canvas1.height / 2 - height / 2;
+        ctx1.drawImage(oImg, x, y, width, height);
+        ctx1.restore();
+    }
+
+
+    function Start() {
+        scale = eI;
+        drawImageByScale(scale);
+        console.log(isRealTime);
+        coord(scale);
+    }
+    function Enlarge() {
+        console.log(++eI);
+        eI += 0.1;
+        scale = eI;
+        drawImageByScale(scale);
+        console.log(isRealTime);
+    }
+    function Shrink() {
+        if (eI >= 1) {
+            eI -= 0.1;
+            scale = eI;
+            drawImageByScale(scale);
+        }
+    }
+
+
+    // sign是我定义的，将来会根据实际情况布置上去，应该有锚点ID，位置坐标
+
+
+    // line只是模拟的假路径，实际上的流程是这样的————锚点（包含锚点ID）事先按照实际情况布置好（前端页面控制），然后卡（类似SIM卡，携带用户信息）去比较与最近的锚点的距离，如果离锚点A近，则激活锚点A（前端控制样式），接下来离锚点B近则激活锚点B。这样一来事先规定的路径如（6个锚点分别是A、B、C、D、E、F，规定A-B-C-D-E-F未正确的路径）便可以在页面上模拟实现路径图。其中的与锚点最近距离由后台实时上报
+    /*function drawLine(scale) {
+        var t = 1;
+        $.ajax({
+            type: 'get',
+            url: 'path.json',
+            dataType: 'json',
+            success: function (res) {
+                var i = 0;
+
+                var vertices = [];
+
+                function addArr() {
+                    vertices.push({x: res.card_01[i].x + 10, y: res.card_01[i].y + 10});
+                    i++;
+                    if (vertices.length >= 6) {
+                        clearInterval(timer);
+                    }
+                    //                        console.log(vertices);
+                    //                        return vertices;
+                    var points = calcWaypoints(vertices);
+                    animate(points);
+
+                    //                        console.log(points);
+
+                    function calcWaypoints(vertices) {
+                        var waypoints = [];
+                        for (var i = 1; i < vertices.length; i++) {
+                            var pt0 = vertices[i - 1];
+                            var pt1 = vertices[i];
+                            var dx = pt1.x - pt0.x;
+                            var dy = pt1.y - pt0.y;
+                            for (var j = 0; j <= 1; j++) {
+                                var x = (pt0.x + dx * j / 1) * scale;
+                                var y = (pt0.y + dy * j / 1) * scale;
+                                waypoints.push({
+                                    x: x,
+                                    y: y
+                                });
+                            }
+                        }
+                        return (waypoints);
+                    }
+
+
+                    requestAnimationFrame(animate);
+
+                    function animate() {
+                        //					if(t < 1000 && moveLineFlag) {
+                        /!*if (!moveLineFlag) {
+                         ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+                         }*!/
+                        // console.log(points[0])
+                        // ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+                        ctx1.save();
+                        ctx1.beginPath();
+                        // ctx1.moveTo(points[t - 1].x + 0.5, points[t - 1].y + 0.5);
+                        ctx1.strokeStyle = 'lightblue';
+                        ctx1.lineTo(points[t - 1].x, points[t - 1].y);
+                        ctx1.lineTo(points[t].x, points[t].y);
+                        if (points[t].x == undefined || points[t].y == undefined) {
+                            return;
+                        }
+                        ctx1.stroke();
+                        ctx1.restore();
+                        t++;
+                    }
+                }
+
+                timer = setInterval(addArr, 1000);
+            }
+        })
+    }*/
+
+    function drawLine(scale) {
+        $.ajax({
+            type: 'get',
+            data: {},
+            url: 'path.json',
+            dataType: 'json',
+            success: function (res) {
+                console.log(res);
+                var path = [];
+                for (var i = 0; i < res.card_01.length; i++) {
+                    path.push({x: res.card_01[i].x, y: res.card_01[i].y})
+                }
+                console.log(path);
+                var green = 'green';
+                setInterval(Lines(path, green), 1000);
+            }
+        })
+    }
+    // 获取鼠标坐标&&鼠标双击画上锚点
+    function coord(scale) {
+        function windowToCanvas(canvas, x, y) {
+            var bBox = canvas2.getBoundingClientRect();
+            return {
+                x: (x - bBox.left * (canvas2.width / bBox.width)) * scale,
+                y: (y - bBox.top * (canvas2.height / bBox.height)) * scale
+            };
+        }
+        function updateReadout(x, y) {
+            // 鼠标双击添加锚点
+            canvas2.ondblclick = function (index) {
+                Signs.push({x: x, y: y});
+                Signs[dian].isSelected = false;
+                dian++;
+                console.log(Signs);
+                drawSigns();
+            }
+            readout.innerText = "这里是鼠标坐标位置:" + "(" + x.toFixed(0) + "," + y.toFixed(0) + ")";
+        }
+
+        canvas2.onmousemove = function (e) {
+            var loc = windowToCanvas(canvas1, e.clientX, e.clientY);
+            updateReadout(loc.x, loc.y);
+        };
+
+
+    }
+
+    // 画线
+    function Lines(arr, color) {
+        ctx1.save();
+        ctx1.beginPath();
+        ctx1.strokeStyle = color;
+        ctx1.lineWidth = 5;
+        ctx1.moveTo(arr[0].x, arr[0].y);
+        for (var i = 1; i < arr.length; i++) {
+            ctx1.lineTo(arr[i].x * scale, arr[i].y * scale);
+        }
+        ctx1.stroke();
+        ctx1.closePath();
+        ctx1.restore();
+    }
+    // 点击“形成因道路线”按钮生成引导路径
+    function showLines() {
+        var red = 'red';
+        Lines(Signs, red)
+    }
+
+    function drawSigns() {
+        ctx2.clearRect(0, 0, canvas2.width * scale, canvas2.height * scale);
+
+        for (var i = 0; i < Signs.length; i++) {
+            if (Signs[i].isSelected) {
+                console.log("第" + (i + 1) + "个图标被选中了");
+//                ctx2.globalAlpha = 1;
+                sign.width = 20;
+                sign.height = 25;
+            } else {
+//                ctx2.globalAlpha = 0.5;
+                sign.width = 15;
+                sign.height = 20;
+            }
+            ctx2.drawImage(sign, (Signs[i].x - sign.width / 2) * scale , (Signs[i].y - sign.height) * scale, sign.width, sign.height);
+            /*if (Signs.length >= 2) {
+             console.log(Signs[1])
+             }*/
+        }
+    }
+
+    var previousSelectedSign;
+    function canvasClick(e) {
+        // 取得画布上被单击的点
+        var clickX = e.clientX - canvas2.offsetLeft;
+        var clickY = e.clientY - canvas2.offsetTop;
+        console.log(clickX, clickY);
+        for (var i = Signs.length - 1; i >= 0; i--) {
+            var distanceFromCenter = Math.sqrt(Math.pow(Signs[i].x - clickX, 2) + Math.pow(Signs[i].y - clickY, 2));
+            if (distanceFromCenter <= 50) {
+                if (previousSelectedSign != null) previousSelectedSign.isSelected = false;
+                previousSelectedSign = Signs[i];
+                Signs[i].isSelected = true;
+                console.log(Signs);
+                drawSigns();
+                return;
+            }
+        }
+    }
+
+
+    // 删除选定的锚点
+    function deleteSign() {
+        for (var i = 0; i < Signs.length; i++) {
+            if (Signs[i].isSelected) {
+                console.log('我要删除第' + (i + 1) + '个锚点');
+                Signs.splice(i, 1);
+                ctx1.clearRect(0, 0, canvas2.width * scale, canvas2.height * scale);
+                drawImageByScale(scale)
+                showLines(scale);
+                drawSigns(scale);
+                break;
+            }
+        }
+    }
+
+
+    // 查看实时路线
+    function realTimeLines() {
+        scale = eI;
+        drawLine(scale);
+    }
+</script>
+
+</html>

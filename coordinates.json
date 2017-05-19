@@ -1,0 +1,6 @@
+[
+  {"name": "A", "location": "角落1",  "coordinate": "(001, 002)"},
+  {"name": "B", "location": "角落2",  "coordinate": "(003, 004)"},
+  {"name": "C", "location": "角落3",  "coordinate": "(005, 006)"},
+  {"name": "D", "location": "角落4",  "coordinate": "(007, 008)"}
+]

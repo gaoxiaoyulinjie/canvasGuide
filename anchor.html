@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>坐标点管理</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <style>
+        .wrap {
+            margin: 0 auto;
+            width: 90%;
+        }
+
+        .btn {
+            background: #008000;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: #90ee90;
+        }
+
+        .user-list {
+            border-top: 1px solid #cccccc;
+            margin-top: 20px;
+        }
+
+        .user-list dt,
+        .user-list dd {
+            border-bottom: 1px solid #cccccc;
+            float: left;
+            width: 100%;
+            height: 50px;
+        }
+
+        .user-list dt span,
+        .user-list dd span,
+        .user-list dd div {
+            float: left;
+            font-size: 16px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+        }
+
+        .user-list dt span,
+        .user-list dd span {
+            width: 25%;
+        }
+
+        .user-list dt span:nth-child(3),
+        .user-list dd div {
+            width: 25%;
+        }
+
+        .user-list dd div em {
+            display: inline-block;
+            height: 30px;
+            line-height: 30px;
+            margin: 10px 0;
+            width: 30%;
+        }
+
+        .btn-box {
+            padding: 20px 0;
+        }
+
+        .btn-box span,
+        .btn-box input {
+            display: block;
+            height: 40px;
+            line-height: 40px;
+            width: 150px;
+        }
+
+        .btn-box input:disabled {
+            background: #ddd;
+            color: #aaaaaa;
+            cursor: not-allowed;
+        }
+
+        h2 {
+            font-size: 24px;
+            padding: 20px 0;
+        }
+
+        .user-cont li {
+            padding-bottom: 20px;
+            width: 100%;
+        }
+
+        .user-cont li,
+        .user-cont li label,
+        .user-cont li input {
+            float: left;
+            font-size: 16px;
+        }
+
+        .user-cont li,
+        .user-cont li label {
+            height: 50px;
+            line-height: 50px;
+        }
+
+        .user-cont li label {
+            text-align: right;
+            padding-right: 30px;
+            width: 180px;
+        }
+
+        .user-cont li input {
+            border: 1px solid #cccccc;
+            height: 18px;
+            line-height: 18px;
+            padding: 15px 0 15px 15px;
+            width: 50%;
+        }
+    </style>
+</head>
+<body ng-app="myApp" ng-controller="myCtrl">
+<!-- 用户列表 -->
+<dl class="wrap user-list clearfix">
+    <dt>
+        <span>名称</span>
+        <span>位置（如：角落）</span>
+        <span>坐标</span>
+        <span>操作</span>
+    </dt>
+    <dd ng-repeat="item in data">
+        <span>{{item.name}}</span>
+        <span>{{item.location}}</span>
+        <span>{{item.coordinate}}</span>
+        <div>
+            <em class="btn" ng-click="editFun($index, item.name, item.location, item.coordinate)">编辑</em>
+            <em class="btn" ng-click="removeFun($index)">删除</em>
+        </div>
+    </dd>
+</dl>
+
+<div class="wrap btn-box"><span class="btn" ng-click="createFun()">创建新坐标</span></div>
+
+<h2 class="wrap" ng-hide="editBol">创建新坐标</h2>
+<h2 class="wrap" ng-show="editBol">编辑坐标信息</h2>
+
+<ul class="wrap user-cont clearfix">
+    <li>
+        <label>名称</label>
+        <input type="text" ng-model="name" ng-change="changeFun()">
+    </li>
+    <li>
+        <label>位置</label>
+        <input type="text" ng-model="location" ng-change="changeFun()">
+    </li>
+    <li>
+        <label>坐标</label>
+        <input type="text" ng-model="coordinate" ng-change="changeFun()">
+    </li>
+</ul>
+<div class="wrap btn-box"><input type="submit" ng-disabled="submitBol" value="提交" ng-click="submitFun()"
+                                 ng-model="submit" class="btn"></div>
+</body>
+</html>
+<script src="jquery-1.9.1.js"></script>
+<script src="js/angular.min.js"></script>
+<script>
+    var app = angular.module('myApp', []);
+    var json;
+
+    app.controller('myCtrl', function ($scope, $http) {
+        console.log(window.sessionStorage.getItem("aa"));
+        $http({
+            method: 'GET',
+            url: 'coordinates.json'
+        }).then(function successCallback(response) {
+            json = response.data;
+
+            // 获取数据
+            $scope.data = json;
+
+            // 设置编辑ID
+            var editID = 0;
+
+            // 设置功能布尔值
+            $scope.editBol = false;
+
+            // 设置提交布尔值
+            $scope.submitBol = true;
+
+            // 设置重置函数
+            function restFun() {
+                editID = 0;
+                $scope.editBol = false;
+                $scope.submitBol = true;
+                $scope.name = '';
+                $scope.location = '';
+                $scope.coordinate = '';
+            }
+
+            restFun();
+
+            // 设置编辑函数
+            $scope.editFun = function (n, fname, loc, coord) {
+                editID = n; // 设置编辑ID
+                $scope.editBol = true; // 设置功能布尔值
+                $scope.submitBol = false; // 设置提交布尔值
+
+                $scope.name = fname;
+                $scope.location = loc;
+                $scope.coordinate = coord;
+            }
+
+            // 新建用户
+            $scope.createFun = function () {
+                restFun();
+            }
+
+            // 设置输入框输入事件
+            $scope.changeFun = function () {
+                if ($scope.editBol) {
+                    // 编辑功能
+                    $scope.submitBol = $scope.name != '' && $scope.location != '' && $scope.coordinate != '' ? false : true;
+                }
+                else {
+                    $scope.submitBol = $scope.name != '' && $scope.location != '' && $scope.coordinate != '' ? false : true;
+                }
+            };
+
+            // 提交
+            // 分为编辑提交 与 新建提交
+            $scope.submitFun = function () {
+                if ($scope.editBol) {
+                    $scope.data[editID].name = $scope.name;
+                    $scope.data[editID].location = $scope.location;
+                    $scope.data[editID].coordinate = $scope.coordinate;
+                } else {
+                    var obj = {};
+                    obj.name = $scope.name;
+                    obj.location = $scope.location;
+                    obj.coordinate = $scope.coordinate;
+                    $scope.data.push(obj);
+                }
+                restFun();
+            }
+            // 删除
+            $scope.removeFun = function (n) {
+                $scope.data.splice(n, true);
+                // 删除完成后重置样式
+                restFun();
+            }
+        }, function errorCallback(response) {
+            // 请求失败执行代码
+        });
+    })
+
+
+</script>
